@@ -1,7 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
-const g = require('./google.js')
+const g = require('./google.js');
+const server = require('http').createServer(handler);
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
@@ -25,5 +26,11 @@ fs.readFile('credentials.json', (err, content) => {
   });
 }
 
+function handler (req, res) {
+	console.log('new request');
+	res.end();
+}
+
+server.listen(8080);
 
 
