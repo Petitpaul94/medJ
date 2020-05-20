@@ -33,4 +33,45 @@ function handler (req, res) {
 
 server.listen(8080);
 
+const Jmethod = {
+	premierRappel : {
+		instance : '1',
+		moment : '3', 
+		importance : 'red'
+	},
+	deuxièmeRappel : {
+		instance : '2',
+		moment : '4', 
+		importance : 'orange'
+	},
+	troisiemeRappel : {
+		instance : '3',
+		moment : '15', 
+		importance : 'green'
+	},
+};
 
+function genererEvent(titre) {
+	let date = new Date ();
+	let Event = [];
+	for (const event of Jmethod) {
+		date.setDate(date.getDate()+event.moment);
+		
+		Event.push({
+			'summary': title,
+			'description':  `révision ${event.instance} du cours`,
+			'colorId' : event.importance,
+			'start': {
+				'dateTime': date.toISOString(),
+				'timeZone': 'Europe/Paris',
+			},
+			'end': {
+				'dateTime': date.toISOString(),
+				'timeZone': 'Europe/Paris',
+
+			});
+		}
+	}
+}
+
+2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com
