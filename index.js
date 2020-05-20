@@ -1,8 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
-const {google} = require('googleapis');
-const g = require('./google.js');
 const server = require('http').createServer(handler);
+const {google} = require('googleapis');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
@@ -19,10 +18,11 @@ function handler(req, res) {
     chaine += troncon;
   }).on('end', function() {
     // Load client secrets from a local file.
+    console.log(chaine);
     fs.readFile('credentials.json', (err, content) => {
       if (err) return console.log('Error loading client secret file:', err);
       // Authorize a client with credentials, then call the Google Calendar API.
-      g.authorize(JSON.parse(content), magie);
+      authorize(JSON.parse(content), chaine, magie);
     });
 
   });
@@ -32,32 +32,31 @@ function handler(req, res) {
 server.listen(8080);
 
 const Jmethod = {
-  premierRappel: {
+  premierRappel : {
     instance: '1',
-    moment: '3',
+    moment: 3,
     importance: 'red'
   },
-  deuxièmeRappel: {
+  deuxièmeRappel : {
     instance: '2',
-    moment: '4',
+    moment: 4,
     importance: 'orange'
   },
-  troisiemeRappel: {
+  troisiemeRappel : {
     instance: '3',
-    moment: '15',
+    moment: 15,
     importance: 'green'
-  },
+  }
 };
  //Génère le tableau Event qui liste les évènements à poster
 function genererEvent(titre) {
   let date = new Date();
   let Event = [];
-  for (const event of Jmethod) {
-    date.setDate(date.getDate() + event.moment);
+  for (const event in Jmethod) {
+    date.setDate(date.getDate() + Jmethod[event].moment);
     Event.push({
-      'summary': title,
-      'description': `révision ${event.instance} du cours`,
-      'colorId': event.importance,
+      'summary': titre,
+      'description': `Révision ${Jmethod[event].instance} du cours`,
       'start': {
         'dateTime': date.toISOString(),
         'timeZone': 'Europe/Paris',
@@ -73,7 +72,7 @@ function genererEvent(titre) {
 }
 
 //Poste le tableau dans le calendrier
-function magie(auth) {
+function magie(auth, chaine) {
   const calendar = google.calendar({version: 'v3', auth});
   for (var event of genererEvent(chaine)) {
     calendar.events.insert({
@@ -85,7 +84,66 @@ function magie(auth) {
         console.log('There was an error contacting the Calendar service: ' + err);
         return;
       }
-      console.log('Event created: %s', event.htmlLink);
+      console.log('Event created');
     });
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, titre, callback) {
+  const {client_secret, client_id, redirect_uris} = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+      client_id, client_secret, redirect_uris[0]);
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getAccessToken(oAuth2Client, titre, callback);
+    oAuth2Client.setCredentials(JSON.parse(token));
+    callback(oAuth2Client, titre);
+  });
+}
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ */
+function getAccessToken(oAuth2Client, titre, callback) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error retrieving access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        if (err) return console.error(err);
+        console.log('Token stored to', TOKEN_PATH);
+      });
+      callback(oAuth2Client, titre);
+    });
+  });
 }
