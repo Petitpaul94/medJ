@@ -9,6 +9,7 @@
   "author": "Ilan",
   "license": "ISC",
   "dependencies": {
-    "googleapis": "^39.2.0"
+    "googleapis": "^39.2.0",
+    "mysql": "^2.18.1"
   }
 }
