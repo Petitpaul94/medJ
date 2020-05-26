@@ -16,15 +16,24 @@ function call(titre, commence_le) {
 
   con.connect(function(err) {
     if (err) throw err;
+
     con.query(`SELECT * FROM matieres WHERE nom="${matiere}"`, function(err, result, fields) {
+      if (err) throw err;
 
       if (result.length != 0) {
+        con.query(`INSERT INTO cours (nom, commence_le, matiere, firstYear) VALUES ("${nom}", "${commence_le}", "${matiere}", ${firstYear})`, function(err, result) {
+          if (err) throw err;
+        });
         return result[0].couleur;
       } else {
         con.query('SELECT COUNT(nom) AS count FROM matieres', function(err, result) {
-			// on ramène couleur à [|1,11|]
-          let couleur = (result[0].count + 1)%13+13*((result[0].count + 1)%13==0);
+          if (err) throw err;
+          // on ramène couleur à [|1,11|]
+          let couleur = (result[0].count + 1) % 13 + 13 * ((result[0].count + 1) % 13 == 0);
           con.query(`INSERT INTO matieres VALUES ("${matiere}", ${couleur})`, function(err, result) {
+            con.query(`INSERT INTO cours (nom, commence_le, matiere, firstYear) VALUES ("${nom}", "${commence_le}", "${matiere}", ${firstYear})`, function(err, result) {
+              if (err) throw err;
+            });
             if (err) throw err;
             return couleur;
           });
