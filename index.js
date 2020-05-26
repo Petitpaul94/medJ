@@ -2,6 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const server = require('http').createServer(handler);
 const {google} = require('googleapis');
+const db = require('./db.js');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
@@ -52,6 +53,8 @@ const Jmethod = {
 function genererEvent(titre) {
   let date = new Date();
   let Event = [];
+  //appelle la base de données et renvoie la couleur de l'évènement
+  const couleur = db.call(titre, date.toISOString());
   for (const event in Jmethod) {
     date.setDate(date.getDate() + Jmethod[event].moment);
     Event.push({
@@ -65,14 +68,16 @@ function genererEvent(titre) {
         'dateTime': date.toISOString(),
         'timeZone': 'Europe/Paris',
 
-      }
+      },
+	  'colorId': couleur
     });
   }
   return Event;
 }
 
-//Poste le tableau dans le calendrier
+
 function magie(auth, chaine) {
+
   const calendar = google.calendar({version: 'v3', auth});
   for (var event of genererEvent(chaine)) {
     calendar.events.insert({

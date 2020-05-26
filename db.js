@@ -1,4 +1,4 @@
-function dbCall(titre, commence_le) {
+function call(titre, commence_le) {
 
   const mysql = require('mysql');
   //Formatage variables db
@@ -22,7 +22,8 @@ function dbCall(titre, commence_le) {
         return result[0].couleur;
       } else {
         con.query('SELECT COUNT(nom) AS count FROM matieres', function(err, result) {
-          let couleur = result[0].count + 1;
+			// on ramène couleur à [|1,11|]
+          let couleur = (result[0].count + 1)%13+13*((result[0].count + 1)%13==0);
           con.query(`INSERT INTO matieres VALUES ("${matiere}", ${couleur})`, function(err, result) {
             if (err) throw err;
             return couleur;
@@ -34,3 +35,4 @@ function dbCall(titre, commence_le) {
 
 }
 
+exports.call = call;
