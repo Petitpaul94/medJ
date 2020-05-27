@@ -1,7 +1,9 @@
 const fs = require('fs');
 const readline = require('readline');
 const server = require('http').createServer(handler);
-const {google} = require('googleapis');
+const {
+  google
+} = require('googleapis');
 const db = require('./db.js');
 
 // If modifying these scopes, delete token.json.
@@ -23,7 +25,7 @@ function handler(req, res) {
     fs.readFile('credentials.json', (err, content) => {
       if (err) return console.log('Error loading client secret file:', err);
       // Authorize a client with credentials, then call the Google Calendar API.
-      authorize(JSON.parse(content), chaine, magie);
+      authorize(JSON.parse(content), chaine, magie, req.url);
     });
 
   });
@@ -33,23 +35,23 @@ function handler(req, res) {
 server.listen(8080);
 
 const Jmethod = {
-  premierRappel : {
+  premierRappel: {
     instance: '1',
     moment: 3,
     importance: 'red'
   },
-  deuxièmeRappel : {
+  deuxièmeRappel: {
     instance: '2',
     moment: 4,
     importance: 'orange'
   },
-  troisiemeRappel : {
+  troisiemeRappel: {
     instance: '3',
     moment: 15,
     importance: 'green'
   }
 };
- //Génère le tableau Event qui liste les évènements à poster
+//Génère le tableau Event qui liste les évènements à poster
 function genererEvent(titre) {
   let date = new Date();
   let Event = [];
@@ -69,17 +71,33 @@ function genererEvent(titre) {
         'timeZone': 'Europe/Paris',
 
       },
-	  'colorId': couleur
+      'colorId': couleur
     });
   }
   return Event;
 }
 
 
-function magie(auth, chaine) {
+function magie(auth, chaine, url) {
+  const calendar = google.calendar({
+    version: 'v3',
+    auth
+  });
 
-  const calendar = google.calendar({version: 'v3', auth});
-  for (var event of genererEvent(chaine)) {
+  if (url == '/reporter') {
+    let date = new Date();
+    const event = {
+      'summary': chaine,
+      'description': 'report du cours',
+      'start': {
+        'dateTime': date.toISOString(),
+        'timeZone': 'Europe/Paris',
+      },
+      'end': {
+        'dateTime': date.toISOString(),
+        'timeZone': 'Europe/Paris',
+      }
+    };
     calendar.events.insert({
       auth: auth,
       calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',
@@ -91,10 +109,26 @@ function magie(auth, chaine) {
       }
       console.log('Event created');
     });
+
+
+  } else {
+    for (var event of genererEvent(chaine)) {
+      calendar.events.insert({
+        auth: auth,
+        calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',
+        resource: event,
+      }, function(err, event) {
+        if (err) {
+          console.log('There was an error contacting the Calendar service: ' + err);
+          return;
+        }
+        console.log('Event created');
+      });
+    }
   }
+
+
 }
-
-
 
 
 
@@ -110,16 +144,20 @@ function magie(auth, chaine) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, titre, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
+function authorize(credentials, titre, callback, url) {
+  const {
+    client_secret,
+    client_id,
+    redirect_uris
+  } = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(
-      client_id, client_secret, redirect_uris[0]);
+    client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getAccessToken(oAuth2Client, titre, callback);
+    if (err) return getAccessToken(oAuth2Client, titre, callback, url);
     oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client, titre);
+    callback(oAuth2Client, titre, url);
   });
 }
 /**
@@ -128,7 +166,7 @@ function authorize(credentials, titre, callback) {
  * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
-function getAccessToken(oAuth2Client, titre, callback) {
+function getAccessToken(oAuth2Client, titre, callback, url) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -148,7 +186,7 @@ function getAccessToken(oAuth2Client, titre, callback) {
         if (err) return console.error(err);
         console.log('Token stored to', TOKEN_PATH);
       });
-      callback(oAuth2Client, titre);
+      callback(oAuth2Client, titre, url);
     });
   });
 }
