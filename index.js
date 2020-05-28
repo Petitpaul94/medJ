@@ -86,6 +86,7 @@ function magie(auth, chaine, url) {
 
   if (url == '/reporter') {
     let date = new Date();
+	date.setDate(date.getDate()+1);
     const event = {
       'summary': chaine,
       'description': 'report du cours',
