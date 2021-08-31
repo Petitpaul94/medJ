@@ -4,7 +4,7 @@ const server = require('http').createServer(handler);
 const {
   google
 } = require('googleapis');
-const db = require('./db.js');
+
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
@@ -38,25 +38,29 @@ const Jmethod = {
   premierRappel: {
     instance: '1',
     moment: 3,
-    importance: 'red'
+
   },
   deuxièmeRappel: {
     instance: '2',
-    moment: 4,
-    importance: 'orange'
+    moment: 7,
+
   },
   troisiemeRappel: {
     instance: '3',
     moment: 15,
-    importance: 'green'
+
+  },
+  quatriemeRappel: {
+    instance: '4',
+    moment: 30,
+
   }
 };
 //Génère le tableau Event qui liste les évènements à poster
 function genererEvent(titre) {
   let date = new Date();
   let Event = [];
-  //appelle la base de données et renvoie la couleur de l'évènement
-  const couleur = db.call(titre, date.toISOString());
+
   for (const event in Jmethod) {
     date.setDate(date.getDate() + Jmethod[event].moment);
     Event.push({
@@ -70,8 +74,7 @@ function genererEvent(titre) {
         'dateTime': date.toISOString(),
         'timeZone': 'Europe/Paris',
 
-      },
-      'colorId': couleur
+      }
     });
   }
   return Event;
@@ -84,35 +87,6 @@ function magie(auth, chaine, url) {
     auth
   });
 
-  if (url == '/reporter') {
-    let date = new Date();
-	date.setDate(date.getDate()+1);
-    const event = {
-      'summary': chaine,
-      'description': 'report du cours',
-      'start': {
-        'dateTime': date.toISOString(),
-        'timeZone': 'Europe/Paris',
-      },
-      'end': {
-        'dateTime': date.toISOString(),
-        'timeZone': 'Europe/Paris',
-      }
-    };
-    calendar.events.insert({
-      auth: auth,
-      calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',
-      resource: event,
-    }, function(err, event) {
-      if (err) {
-        console.log('There was an error contacting the Calendar service: ' + err);
-        return;
-      }
-      console.log('Event created');
-    });
-
-
-  } else {
     for (var event of genererEvent(chaine)) {
       calendar.events.insert({
         auth: auth,
@@ -126,7 +100,6 @@ function magie(auth, chaine, url) {
         console.log('Event created');
       });
     }
-  }
 
 
 }
