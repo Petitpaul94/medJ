@@ -54,6 +54,16 @@ const Jmethod = {
     instance: '4',
     moment: 30,
 
+  },
+    cinquiemeRappel: {
+    instance: '5',
+    moment: 30,
+
+  },
+    sixiemeRappel: {
+    instance: '6',
+    moment: 30,
+
   }
 };
 //Génère le tableau Event qui liste les évènements à poster
