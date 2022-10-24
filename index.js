@@ -22,7 +22,7 @@ function handler(req, res) {
   }).on('end', function() {
     // Load client secrets from a local file.
     console.log(chaine);
-    fs.readFile('credentials.json', (err, content) => {
+    fs.readFile('credentials2.json', (err, content) => {
       if (err) return console.log('Error loading client secret file:', err);
       // Authorize a client with credentials, then call the Google Calendar API.
       authorize(JSON.parse(content), chaine, magie, req.url);
@@ -91,14 +91,14 @@ function genererEvent(titre) {
 }
 
 
-function magie(auth, chaine, url) {
+async function magie(auth, chaine, url) {
   const calendar = google.calendar({
     version: 'v3',
     auth
   });
 
     for (var event of genererEvent(chaine)) {
-      calendar.events.insert({
+       calendar.events.insert({
         auth: auth,
         calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',//:ilan, 3elffgn9kfi7vmijn3gptlg2sk@group.calendar.google.com :sirine
         resource: event,
@@ -108,7 +108,9 @@ function magie(auth, chaine, url) {
           return;
         }
         console.log('Event created');
+
       });
+      await sleep(1000);
     }
 
 
@@ -172,5 +174,12 @@ function getAccessToken(oAuth2Client, titre, callback, url) {
       });
       callback(oAuth2Client, titre, url);
     });
+  });
+}
+
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
 }
