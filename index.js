@@ -37,22 +37,22 @@ server.listen(8080);
 const Jmethod = {
   premierRappel: {
     instance: '1',
-    moment: 3,
+    moment: 4,
 
   },
   deuxièmeRappel: {
     instance: '2',
-    moment: 7,
+    moment: 8,
 
   },
   troisiemeRappel: {
     instance: '3',
-    moment: 15,
+    moment: 16,
 
   },
   quatriemeRappel: {
     instance: '4',
-    moment: 30,
+    moment: 20,
 
   },
     cinquiemeRappel: {
@@ -100,7 +100,7 @@ function magie(auth, chaine, url) {
     for (var event of genererEvent(chaine)) {
       calendar.events.insert({
         auth: auth,
-        calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',
+        calendarId: '2rcan2lpn0lccjkf9f4dmqpthc@group.calendar.google.com',//:ilan, 3elffgn9kfi7vmijn3gptlg2sk@group.calendar.google.com :sirine
         resource: event,
       }, function(err, event) {
         if (err) {
